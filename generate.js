@@ -56,6 +56,11 @@ get('http://www.khronos.org/registry/egl/api/1.1/EGL/egl.h', function(err, res, 
         }
       }
 
+      if (signature.name === 'eglGetProcAddress') {
+        console.log('WARNING: extensions currently disabled.');
+        return;
+      }
+
       var upper = fnName[0].toUpperCase() + fnName.substring(1);
       signature.arguments = {};
       signature.list = [];
@@ -90,7 +95,7 @@ get('http://www.khronos.org/registry/egl/api/1.1/EGL/egl.h', function(err, res, 
       cc.push('Handle<Value> ' + upper  + '(const Arguments& args) {');
       cc.push('  HandleScope scope;');
       cc.push('');
-      var skipReturn = false, skipCall = false;
+      var skipReturn = false, skipCall = false, beforeCall = false;
       // collect arguments
       signature.list.forEach(function(name, i) {
 
@@ -105,20 +110,6 @@ get('http://www.khronos.org/registry/egl/api/1.1/EGL/egl.h', function(err, res, 
             cc.push('  v8::String::Utf8Value string_' + name + '(args[' + i + ']);')
             cc.push('  ' + type + ' ' + name + ' = *string_' + name + ';');
           break;
-
-          case 'const GLvoid*':
-          case 'const GLfloat*':
-            cc.push('');
-            cc.push('  // buffer');
-            cc.push('  Local<Object> obj_' + name + ' = args[' + i + ']->ToObject();');
-            cc.push('  if (obj_' + name + '->GetIndexedPropertiesExternalArrayDataType() != kExternalFloatArray) {');
-            cc.push('    ThrowException(Exception::TypeError(String::New("' + this.name + ' expects a Buffer for argument ' + i + '")));');
-            cc.push('    return scope.Close(Undefined());');
-            cc.push('  }');
-            cc.push('  ' + type + ' '+ name + ' = static_cast<' + type + '>(obj_' + name + '->GetIndexedPropertiesExternalArrayData());');
-            cc.push('');
-          break;
-
 
           case 'const EGLint*':
             if (signature.name !== 'glShaderSource') {
@@ -159,7 +150,11 @@ get('http://www.khronos.org/registry/egl/api/1.1/EGL/egl.h', function(err, res, 
           case 'EGLint*':
             cc.push('  ' + type.replace('*', '') + ' ' + name + '_base = 0;');
             cc.push('  ' + type + ' ' + name + ' = &' + name + '_base;');
-            skipReturn = '\n  return scope.Close(Number::New(' + name + '_base));';
+
+            // no need to return the # of configs to js as it will be an array
+            if (name !== 'num_config') {
+              skipReturn = '\n  return scope.Close(Number::New(' + name + '_base));';
+            }
           break;
 
           case 'EGLDisplay':
@@ -169,7 +164,20 @@ get('http://www.khronos.org/registry/egl/api/1.1/EGL/egl.h', function(err, res, 
           case 'EGLConfig':
           case 'EGLSurface':
           case 'EGLContext':
+            cc.push('  ' + type + ' ' + name + ' = External::Unwrap(args[' + i + ']);')
+          break;
 
+          case 'EGLConfig*':
+            beforeCall = [
+            '  ' + type + ' ' + name + ';',
+            '',
+            '  Handle<Array> array_' + name + ' = Array::New(*num_config);',
+            '  for (int i=0; i<*num_config; i++) {',
+            '    array_' + name + '->Set(i, External::New(' + name + '[i]));',
+            '  }',
+            ''].join('\n');
+
+            skipReturn = '  return scope.Close(array_' + name + ');';
           break;
 
           default:
@@ -181,26 +189,36 @@ get('http://www.khronos.org/registry/egl/api/1.1/EGL/egl.h', function(err, res, 
       }.bind(signature));
 
 
+        if (beforeCall) {
+          cc.push(beforeCall);
+        }
+
         switch (signature.returnType) {
-          case 'void':
+/*          case 'void':
             // TODO: out args
             !skipCall && cc.push('  ' + signature.name + '(' + Object.keys(signature.arguments).join(', ') + ');');
             !skipReturn && cc.push('  return scope.Close(Undefined());');
           break;
-
+*/
           case 'EGLint':
-          case 'EGLenum':
-          case 'GLuint':
             !skipCall && cc.push('  ' + signature.returnType + ' ret = ' + signature.name + '(' + Object.keys(signature.arguments).join(', ') + ');');
             !skipReturn && cc.push('  return scope.Close(Number::New(ret));');
           break;
 
           case 'EGLBoolean':
             !skipCall && cc.push('  ' + signature.returnType + ' ret = ' + signature.name + '(' + Object.keys(signature.arguments).join(', ') + ');');
+            if (skipReturn) {
+              cc.push('  if (!ret) {');
+              cc.push('    printf("' + signature.name + ' failed with error 0x%x", eglGetError());');
+              cc.push('    assert(false);');
+              cc.push('  }');
+            }
             !skipReturn && cc.push('  return scope.Close(Number::New(ret));');
           break;
 
+          case 'const char*':
           case 'const char *':
+          console.log('ret const char', signature.name, skipCall, skipCall);
             !skipCall && cc.push('  ' + signature.returnType + ' ret = ' + signature.name + '(' + Object.keys(signature.arguments).join(', ') + ');');
             !skipReturn && cc.push('  return scope.Close(String::New(ret));');
           break;
@@ -209,7 +227,7 @@ get('http://www.khronos.org/registry/egl/api/1.1/EGL/egl.h', function(err, res, 
           case 'EGLDisplay':
           case 'EGLSurface':
             !skipCall && cc.push('  ' + signature.returnType + ' ret = ' + signature.name + '(' + Object.keys(signature.arguments).join(', ') + ');');
-            !skipReturn && cc.push('  return scope.Close(Undefined());');
+            !skipReturn && cc.push('  return scope.Close(External::New(ret));');
           break;
 
           default:
