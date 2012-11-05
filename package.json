@@ -1,0 +1,28 @@
+{
+  "name": "egl",
+  "version": "0.0.0",
+  "description": "node bindings for EGL context management",
+  "main": "index.js",
+  "dependencies": {
+
+  },
+  "devDependencies": {
+    "request": "~2.11.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "node-gyp rebuild"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tmpvar/node-egl.git"
+  },
+  "keywords": [
+    "opengl",
+    "egl"
+  ],
+  "author": "Elijah Insua <tmpvar@gmail.com>",
+  "license": "MIT",
+  "gypfile": true,
+  "readmeFilename": "README.md"
+}
