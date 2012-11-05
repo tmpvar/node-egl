@@ -17,7 +17,7 @@ Handle<Value> EglGetError(const Arguments& args) {
 Handle<Value> EglGetDisplay(const Arguments& args) {
   HandleScope scope;
 
-  NativeDisplayType display = External::Unwrap(args[0]);
+  NativeDisplayType display = (NativeDisplayType) External::Unwrap(args[0]);
   EGLDisplay ret = eglGetDisplay(display);
   return scope.Close(External::New(ret));
 }
@@ -25,7 +25,7 @@ Handle<Value> EglGetDisplay(const Arguments& args) {
 Handle<Value> EglInitialize(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
   EGLint major_base = 0;
   EGLint* major = &major_base;
   EGLint minor_base = 0;
@@ -42,7 +42,7 @@ Handle<Value> EglInitialize(const Arguments& args) {
 Handle<Value> EglTerminate(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
   EGLBoolean ret = eglTerminate(dpy);
   return scope.Close(Number::New(ret));
 }
@@ -50,7 +50,7 @@ Handle<Value> EglTerminate(const Arguments& args) {
 Handle<Value> EglQueryString(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
   EGLint name = args[1]->Int32Value();
   const char* ret = eglQueryString(dpy, name);
   return scope.Close(String::New(ret));
@@ -59,11 +59,11 @@ Handle<Value> EglQueryString(const Arguments& args) {
 Handle<Value> EglGetConfigs(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
   EGLint config_size = args[2]->Int32Value();
   EGLint num_config_base = 0;
   EGLint* num_config = &num_config_base;
-  EGLConfig* configs;
+  EGLConfig* configs = NULL;
 
   Handle<Array> array_configs = Array::New(*num_config);
   for (int i=0; i<*num_config; i++) {
@@ -81,7 +81,7 @@ Handle<Value> EglGetConfigs(const Arguments& args) {
 Handle<Value> EglChooseConfig(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
 
   Handle<Array> array_attrib_list = Handle<Array>::Cast(args[1]);
   int length_1 = array_attrib_list->Get(String::New("length"))->ToObject()->Uint32Value();
@@ -93,7 +93,7 @@ Handle<Value> EglChooseConfig(const Arguments& args) {
   EGLint config_size = args[3]->Int32Value();
   EGLint num_config_base = 0;
   EGLint* num_config = &num_config_base;
-  EGLConfig* configs;
+  EGLConfig* configs = NULL;
 
   Handle<Array> array_configs = Array::New(*num_config);
   for (int i=0; i<*num_config; i++) {
@@ -111,8 +111,8 @@ Handle<Value> EglChooseConfig(const Arguments& args) {
 Handle<Value> EglGetConfigAttrib(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLConfig config = External::Unwrap(args[1]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLConfig config = (EGLConfig) External::Unwrap(args[1]);
   EGLint attribute = args[2]->Int32Value();
   EGLint value_base = 0;
   EGLint* value = &value_base;
@@ -128,9 +128,9 @@ Handle<Value> EglGetConfigAttrib(const Arguments& args) {
 Handle<Value> EglCreateWindowSurface(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLConfig config = External::Unwrap(args[1]);
-  NativeWindowType window = External::Unwrap(args[2]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLConfig config = (EGLConfig) External::Unwrap(args[1]);
+  NativeWindowType window = (NativeWindowType) External::Unwrap(args[2]);
 
   Handle<Array> array_attrib_list = Handle<Array>::Cast(args[3]);
   int length_3 = array_attrib_list->Get(String::New("length"))->ToObject()->Uint32Value();
@@ -146,9 +146,9 @@ Handle<Value> EglCreateWindowSurface(const Arguments& args) {
 Handle<Value> EglCreatePixmapSurface(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLConfig config = External::Unwrap(args[1]);
-  NativePixmapType pixmap = External::Unwrap(args[2]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLConfig config = (EGLConfig) External::Unwrap(args[1]);
+  NativePixmapType pixmap = (NativePixmapType) External::Unwrap(args[2]);
 
   Handle<Array> array_attrib_list = Handle<Array>::Cast(args[3]);
   int length_3 = array_attrib_list->Get(String::New("length"))->ToObject()->Uint32Value();
@@ -164,8 +164,8 @@ Handle<Value> EglCreatePixmapSurface(const Arguments& args) {
 Handle<Value> EglCreatePbufferSurface(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLConfig config = External::Unwrap(args[1]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLConfig config = (EGLConfig) External::Unwrap(args[1]);
 
   Handle<Array> array_attrib_list = Handle<Array>::Cast(args[2]);
   int length_2 = array_attrib_list->Get(String::New("length"))->ToObject()->Uint32Value();
@@ -181,8 +181,8 @@ Handle<Value> EglCreatePbufferSurface(const Arguments& args) {
 Handle<Value> EglDestroySurface(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLSurface surface = External::Unwrap(args[1]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLSurface surface = (EGLSurface) External::Unwrap(args[1]);
   EGLBoolean ret = eglDestroySurface(dpy, surface);
   return scope.Close(Number::New(ret));
 }
@@ -190,8 +190,8 @@ Handle<Value> EglDestroySurface(const Arguments& args) {
 Handle<Value> EglQuerySurface(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLSurface surface = External::Unwrap(args[1]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLSurface surface = (EGLSurface) External::Unwrap(args[1]);
   EGLint attribute = args[2]->Int32Value();
   EGLint value_base = 0;
   EGLint* value = &value_base;
@@ -207,8 +207,8 @@ Handle<Value> EglQuerySurface(const Arguments& args) {
 Handle<Value> EglSurfaceAttrib(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLSurface surface = External::Unwrap(args[1]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLSurface surface = (EGLSurface) External::Unwrap(args[1]);
   EGLint attribute = args[2]->Int32Value();
   EGLint value = args[3]->Int32Value();
   EGLBoolean ret = eglSurfaceAttrib(dpy, surface, attribute, value);
@@ -218,8 +218,8 @@ Handle<Value> EglSurfaceAttrib(const Arguments& args) {
 Handle<Value> EglBindTexImage(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLSurface surface = External::Unwrap(args[1]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLSurface surface = (EGLSurface) External::Unwrap(args[1]);
   EGLint buffer = args[2]->Int32Value();
   EGLBoolean ret = eglBindTexImage(dpy, surface, buffer);
   return scope.Close(Number::New(ret));
@@ -228,8 +228,8 @@ Handle<Value> EglBindTexImage(const Arguments& args) {
 Handle<Value> EglReleaseTexImage(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLSurface surface = External::Unwrap(args[1]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLSurface surface = (EGLSurface) External::Unwrap(args[1]);
   EGLint buffer = args[2]->Int32Value();
   EGLBoolean ret = eglReleaseTexImage(dpy, surface, buffer);
   return scope.Close(Number::New(ret));
@@ -238,7 +238,7 @@ Handle<Value> EglReleaseTexImage(const Arguments& args) {
 Handle<Value> EglSwapInterval(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
   EGLint interval = args[1]->Int32Value();
   EGLBoolean ret = eglSwapInterval(dpy, interval);
   return scope.Close(Number::New(ret));
@@ -247,9 +247,9 @@ Handle<Value> EglSwapInterval(const Arguments& args) {
 Handle<Value> EglCreateContext(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLConfig config = External::Unwrap(args[1]);
-  EGLContext share_list = External::Unwrap(args[2]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLConfig config = (EGLConfig) External::Unwrap(args[1]);
+  EGLContext share_list = (EGLContext) External::Unwrap(args[2]);
 
   Handle<Array> array_attrib_list = Handle<Array>::Cast(args[3]);
   int length_3 = array_attrib_list->Get(String::New("length"))->ToObject()->Uint32Value();
@@ -265,8 +265,8 @@ Handle<Value> EglCreateContext(const Arguments& args) {
 Handle<Value> EglDestroyContext(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLContext ctx = External::Unwrap(args[1]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLContext ctx = (EGLContext) External::Unwrap(args[1]);
   EGLBoolean ret = eglDestroyContext(dpy, ctx);
   return scope.Close(Number::New(ret));
 }
@@ -274,10 +274,10 @@ Handle<Value> EglDestroyContext(const Arguments& args) {
 Handle<Value> EglMakeCurrent(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLSurface draw = External::Unwrap(args[1]);
-  EGLSurface read = External::Unwrap(args[2]);
-  EGLContext ctx = External::Unwrap(args[3]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLSurface draw = (EGLSurface) External::Unwrap(args[1]);
+  EGLSurface read = (EGLSurface) External::Unwrap(args[2]);
+  EGLContext ctx = (EGLContext) External::Unwrap(args[3]);
   EGLBoolean ret = eglMakeCurrent(dpy, draw, read, ctx);
   return scope.Close(Number::New(ret));
 }
@@ -307,8 +307,8 @@ Handle<Value> EglGetCurrentDisplay(const Arguments& args) {
 Handle<Value> EglQueryContext(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLContext ctx = External::Unwrap(args[1]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLContext ctx = (EGLContext) External::Unwrap(args[1]);
   EGLint attribute = args[2]->Int32Value();
   EGLint value_base = 0;
   EGLint* value = &value_base;
@@ -339,8 +339,8 @@ Handle<Value> EglWaitNative(const Arguments& args) {
 Handle<Value> EglSwapBuffers(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLSurface draw = External::Unwrap(args[1]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLSurface draw = (EGLSurface) External::Unwrap(args[1]);
   EGLBoolean ret = eglSwapBuffers(dpy, draw);
   return scope.Close(Number::New(ret));
 }
@@ -348,9 +348,9 @@ Handle<Value> EglSwapBuffers(const Arguments& args) {
 Handle<Value> EglCopyBuffers(const Arguments& args) {
   HandleScope scope;
 
-  EGLDisplay dpy = External::Unwrap(args[0]);
-  EGLSurface surface = External::Unwrap(args[1]);
-  NativePixmapType target = External::Unwrap(args[2]);
+  EGLDisplay dpy = (EGLDisplay) External::Unwrap(args[0]);
+  EGLSurface surface = (EGLSurface) External::Unwrap(args[1]);
+  NativePixmapType target = (NativePixmapType) External::Unwrap(args[2]);
   EGLBoolean ret = eglCopyBuffers(dpy, surface, target);
   return scope.Close(Number::New(ret));
 }

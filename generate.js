@@ -164,12 +164,12 @@ get('http://www.khronos.org/registry/egl/api/1.1/EGL/egl.h', function(err, res, 
           case 'EGLConfig':
           case 'EGLSurface':
           case 'EGLContext':
-            cc.push('  ' + type + ' ' + name + ' = External::Unwrap(args[' + i + ']);')
+            cc.push('  ' + type + ' ' + name + ' = (' + type + ') External::Unwrap(args[' + i + ']);')
           break;
 
           case 'EGLConfig*':
             beforeCall = [
-            '  ' + type + ' ' + name + ';',
+            '  ' + type + ' ' + name + ' = NULL;',
             '',
             '  Handle<Array> array_' + name + ' = Array::New(*num_config);',
             '  for (int i=0; i<*num_config; i++) {',

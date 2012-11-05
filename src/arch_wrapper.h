@@ -34,7 +34,7 @@
       #ifdef _WIN32
         #include <windows.h>
       #else
-        #include <GLES2/gl2.h>
+        #include <EGL/egl.h>
       #endif
     #endif
   #endif
